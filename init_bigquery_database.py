@@ -1,9 +1,10 @@
 import sys
+import os
+from dotenv import load_dotenv
 from google.cloud import bigquery
 from google.cloud.exceptions import Conflict
 
 # How to run: python3 init_bigquery_database.py <name of the environment, dev, stg, prod, etc.>
-# TODO: Update at least the project-id, and location in 2. step
 
 
 def __create_table(dataset: bigquery.Table, table_name: str, schema: list, client: bigquery.Client) -> None:
@@ -25,7 +26,13 @@ def main():
 
 
     # 2 Set build configuration
-    project_id = 'rasmus-prod'
+    dotenv_file = f".env"
+    if os.path.exists(dotenv_file):
+        load_dotenv(dotenv_file)
+    else:
+        raise ValueError(f'No path: {dotenv_file}')
+    
+    project_id = os.getenv('GCP_PROJECT_ID')
     dataset_id = f"st_workout_{sys.argv[1]}"
     location = 'europe-north1'
   
