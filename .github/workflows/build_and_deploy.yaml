@@ -14,12 +14,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: rasmus-prod
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
     - name: Configure Docker to use gcloud as a credential helper
       run: |
@@ -49,5 +52,5 @@ jobs:
 
     - name: Build and push Docker image using Docker Compose
       run: |
-        docker-compose -f docker-compose.yml build
-        docker-compose -f docker-compose.yml push
+        docker-compose -f docker-compose.yaml build
+        docker-compose -f docker-compose.yaml push
