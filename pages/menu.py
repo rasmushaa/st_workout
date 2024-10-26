@@ -1,36 +1,46 @@
 import streamlit as st
 
 
-def authenticated_menu():
-    # Show a navigation menu for authenticated users
-    st.sidebar.page_link("pages/login.py", label="Switch accounts")
-    st.sidebar.page_link("pages/user.py", label="Your profile")
-    if st.session_state.role in ["admin", "super-admin"]:
-        st.sidebar.page_link("pages/admin.py", label="Manage users")
-        st.sidebar.page_link(
-            "pages/super-admin.py",
-            label="Manage admin access",
-            disabled=st.session_state.role != "super-admin",
-        )
+if 'menu_selection' not in st.session_state:
+    st.session_state['menu_selection'] = None
 
 
-def unauthenticated_menu():
-    # Show a navigation menu for unauthenticated users
-    st.sidebar.page_link("pages/login.py", label="Log in")
+st.title('Application Menu')
+
+st.subheader('Account Settings')
+with st.empty().container(border=True):
+    if st.button(label='Profile info', icon=":material/person:", use_container_width=True):
+        st.session_state['menu_selection'] = 1
+
+    if st.button(label='Logout', icon=":material/logout:", use_container_width=True):
+        st.session_state['menu_selection'] = 2
 
 
-def menu():
-    # Determine if a user is logged in or not, then show the correct
-    # navigation menu
-    if "role" not in st.session_state or st.session_state.role is None:
-        unauthenticated_menu()
-        return
-    authenticated_menu()
+st.subheader('Application Settings')
+with st.empty().container(border=True):
+    if st.button(label='Manage users', icon=":material/person_add:", use_container_width=True):
+        st.session_state['menu_selection'] = 3
+
+    if st.button(label='Manage exercises', icon=":material/add_circle:", use_container_width=True):
+        st.session_state['menu_selection'] = 4
 
 
-def menu_with_redirect():
-    # Redirect users to the main page if not logged in, otherwise continue to
-    # render the navigation menu
-    if "role" not in st.session_state or st.session_state.role is None:
-        st.switch_page("pages/login.py")
-    menu()
+
+with st.empty().container(border=False, height=10):
+    pass
+
+if st.session_state['menu_selection'] == 1:
+    st.markdown(f"""**Account Information:** \\
+                User name: **{st.session_state.user.name}** \\
+                Account ID: **{st.session_state.user.id}** \\
+                Role: **{st.session_state.user.role}**""")
+    
+
+if st.session_state['menu_selection'] == 4:
+    workout_name = st.text_input('Name of the exercise', disabled=not st.session_state.user.is_admin())
+    if st.button(label='Add exercise', icon=":material/add_circle:"):
+        pass
+    if st.button(label='Delete exercise', icon=":material/delete:"):
+        pass
+
+

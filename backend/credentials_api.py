@@ -12,7 +12,7 @@ class CredentialsAPI():
         SELECT 
             COUNT(*) AS ct
         FROM 
-            {os.getenv('BQ_DATASET_ID')}.{os.getenv('BQ_CREDENTIALS_TABLE')}      
+            {self.__client._dataset}.d_credentials     
         WHERE 
             UserName = '{username}' AND PasswordHash = '{password_hash}'     
         """
@@ -31,7 +31,7 @@ class CredentialsAPI():
             Role,
             PasswordHash
         FROM 
-            {os.getenv('BQ_DATASET_ID')}.{os.getenv('BQ_CREDENTIALS_TABLE')} 
+            {self.__client._dataset}.d_credentials  
         WHERE 
             UserName = '{username}' AND PasswordHash = '{password_hash}'
         """

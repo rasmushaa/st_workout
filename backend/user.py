@@ -20,9 +20,11 @@ class User():
     def role(self):
         return self.__role
     
-    @property
     def is_logged_in(self):
         return self.__is_logged_in
+    
+    def is_admin(self):
+        return self.__role == 'admin'
     
     def log_out(self):
         self.__is_logged_in = False
