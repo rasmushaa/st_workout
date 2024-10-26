@@ -36,15 +36,16 @@ jobs:
 
     - name: Determine Environment and Create .env file
       run: |
+        touch .env  # Ensure the .env file exists
         # Set environment variables based on the branch
         if [[ "${{ github.ref_name }}" == "main" ]]; then # Production environment
           echo "STREAMLIT_ENV=prod" >> .env
           echo "GCP_SERVICE_ACCOUNT=${{ secrets.GCP_SERVICE_ACCOUNT }}" >> .env
-          IMAGE_TAG="latest"
+          echo "IMAGE_TAG=latest" >> .env
         elif [[ "${{ github.ref_name }}" == "stg" ]]; then # Staging environment
           echo "STREAMLIT_ENV=stg" >> .env
           echo "GCP_SERVICE_ACCOUNT=${{ secrets.GCP_SERVICE_ACCOUNT }}" >> .env
-          IMAGE_TAG="stg"
+          echo "IMAGE_TAG=stg" >> .env
         else
           echo "Branch is not configured for deployment"
           exit 1
@@ -52,5 +53,8 @@ jobs:
 
     - name: Build and push Docker image using Docker Compose
       run: |
-        docker-compose -f docker-compose.yaml build
-        docker-compose -f docker-compose.yaml push
+        docker-compose --env-file .env -f docker-compose.yaml build
+        docker-compose --env-file .env -f docker-compose.yaml push
+
+    - name: Clean up .env file
+      run: rm -f .env
