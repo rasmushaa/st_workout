@@ -29,7 +29,7 @@ class BigQueryAPI():
         df = pandas_gbq.read_gbq(sql, 
                                  project_id=self.__project_id,
                                  location=self.__location, 
-                                 credentials=service_account.Credentials.from_service_account_info(json.loads(os.getenv('BQ_SERVICE_ACCOUNT'))), 
+                                 credentials=service_account.Credentials.from_service_account_info(json.loads(os.getenv('GCP_SERVICE_ACCOUNT'))), 
                                  progress_bar_type=None)
         return df
     
@@ -68,7 +68,7 @@ class BigQueryAPI():
         success: bool
             If the insert operation results any errors, those a printed and False is returned
         '''
-        client = bigquery.Client(credentials=service_account.Credentials.from_service_account_info(json.loads(os.getenv('BQ_SERVICE_ACCOUNT'))),
+        client = bigquery.Client(credentials=service_account.Credentials.from_service_account_info(json.loads(os.getenv('GCP_SERVICE_ACCOUNT'))),
                                  location=self.__location)
         
         table_id = f'{self.__project_id }.{self._dataset}.{table}'

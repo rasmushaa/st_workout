@@ -2,6 +2,8 @@ import sys
 from google.cloud import bigquery
 from google.cloud.exceptions import Conflict
 
+# How to run: python3 init_bigquery_database.py <name of the environment, dev, stg, prod, etc.>
+# TODO: Update at least the project-id, and location in 2. step
 
 
 def __create_table(dataset: bigquery.Table, table_name: str, schema: list, client: bigquery.Client) -> None:
