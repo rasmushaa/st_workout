@@ -8,7 +8,7 @@ from google.oauth2 import service_account
 
 class BigQueryAPI():
     def __init__(self):
-        self.__project_id = 'rasmus-prod'
+        self.__project_id = os.getenv("GCP_PROJECT_ID")
         self._dataset = f'st_workout_{os.getenv("STREAMLIT_ENV")}'
         self.__location = 'europe-north1'
 

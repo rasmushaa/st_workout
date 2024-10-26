@@ -1,4 +1,3 @@
-import os
 from .user import User
 from .bigquery_api import BigQueryAPI
 
