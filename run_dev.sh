@@ -22,17 +22,17 @@ kill_previous_streamlit() {
 
 # Function to load environment variables from .env.dev file
 load_env() {
-    echo "Loading environment variables from .env.dev..."
-    if [ -f .env.dev ]; then
+    echo "Loading environment variables from .env..."
+    if [ -f .env ]; then
         # Read the .env.dev file line by line
         while IFS= read -r line; do
             # Skip comments and empty lines
             [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
             # Export the variable
             export "$line"
-        done < .env.dev
+        done < .env
     else
-        echo ".env.dev file not found."
+        echo ".env file not found."
     fi
 }
 
