@@ -53,6 +53,11 @@ jobs:
           exit 1
         fi
 
+    - name: Output .env file content (debug)
+      run: |
+        echo "Contents of .env file:"
+        cat .env | grep -v GCP_SERVICE_ACCOUNT  # Mask sensitive information
+
     - name: Build and push Docker image using Docker Compose
       run: |
         docker-compose --env-file .env -f docker-compose.yaml build
