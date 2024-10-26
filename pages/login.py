@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import hashlib
 from backend.credentials_api import CredentialsAPI
@@ -13,8 +14,9 @@ def st_wrapper_init_user(username, password_hash):
     api = CredentialsAPI()
     return api.init_user(username, password_hash)
 
-
-st.title('Amazing User Login App')
+env = os.getenv('STREAMLIT_ENV')
+env_siffix = '' if env=='prod' else ': STG' if env=='stg' else ': DEV'
+st.title(f'Data Workouts App{env_siffix}')
 
 st.write('Please login')
 username = st.text_input('Username')

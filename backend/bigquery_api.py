@@ -8,9 +8,9 @@ from google.oauth2 import service_account
 
 class BigQueryAPI():
     def __init__(self):
-        self.__project_id = os.getenv('BQ_PROJECT_ID')
-        self.__dataset = os.getenv('BQ_DATASET_ID')
-        self.__location = os.getenv('BQ_DATASET_LOCATION')
+        self.__project_id = 'rasmus-prod'
+        self._dataset = f'st_workout_{os.getenv("STREAMLIT_ENV")}'
+        self.__location = 'europe-north1'
 
 
     def sql_to_pandas(self, sql: str) -> pd.DataFrame:
@@ -47,7 +47,7 @@ class BigQueryAPI():
             The name of destination Table, that is used together with initial project parameters
         '''
         pandas_gbq.to_gbq(df, 
-                          destination_table=f'{self.__dataset }.{table}',
+                          destination_table=f'{self._dataset}.{table}',
                           project_id=self.__project_id, 
                           location=self.__location, 
                           if_exists='append')
@@ -71,7 +71,7 @@ class BigQueryAPI():
         client = bigquery.Client(credentials=service_account.Credentials.from_service_account_info(json.loads(os.getenv('BQ_SERVICE_ACCOUNT'))),
                                  location=self.__location)
         
-        table_id = f'{self.__project_id }.{self.__dataset }.{table}'
+        table_id = f'{self.__project_id }.{self._dataset}.{table}'
 
         errors = client.insert_rows_json(table_id, rows_to_insert)
 

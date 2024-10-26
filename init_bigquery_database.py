@@ -1,6 +1,4 @@
 import sys
-import os
-from dotenv import load_dotenv
 from google.cloud import bigquery
 from google.cloud.exceptions import Conflict
 
@@ -23,26 +21,25 @@ def main():
     print(f'\nConstructing BigQuery Database for {sys.argv[1]}-environment')
 
 
-    # 2. Load Env Variables, including ProjectId, DatasetId, TableNames ...
-    dotenv_file = f".env.{sys.argv[1]}"
-    if os.path.exists(dotenv_file):
-        load_dotenv(dotenv_file)
-    else:
-        raise ValueError(f'No path: {dotenv_file}')
 
+    # 2 Set build configuration
+    project_id = 'rasmus-prod'
+    dataset_id = f"st_workout_{sys.argv[1]}"
+    location = 'europe-north1'
   
+
     # 3. Initializea BigQuery client object for Creating Non-Existant Databasets/Tables
     client = bigquery.Client()
 
 
     # 4. Construct a Dataset object to send to the API.
-    dataset = bigquery.Dataset(f"{os.getenv('BQ_PROJECT_ID')}.{os.getenv('BQ_DATASET_ID')}")
-    dataset.location = os.getenv('BQ_DATASET_LOCATION')
+    dataset = bigquery.Dataset(f"{project_id}.{dataset_id}")
+    dataset.location = location
     try:
         dataset = client.create_dataset(dataset, timeout=30)
-        print(f"Created dataset: {os.getenv('BQ_PROJECT_ID')}.{os.getenv('BQ_DATASET_ID')} at {os.getenv('BQ_DATASET_LOCATION')}")
+        print(f"Created dataset: {project_id}.{dataset_id} at {location}")
     except Conflict as e:
-        print(f"Warning: there already exists a '{os.getenv('BQ_DATASET_ID')}' dataset in the '{os.getenv('BQ_PROJECT_ID')}' project\nAborting Initalization, Nothing was updated...\n")
+        print(f"Warning: there already exists a '{dataset_id}' dataset in the '{project_id}' project\nAborting Initalization, Nothing was updated...\n")
         return bigquery.exceptions
 
 
@@ -53,15 +50,15 @@ def main():
     bigquery.SchemaField('Role',            'STRING',   mode="REQUIRED"),
     bigquery.SchemaField('PasswordHash',    'STRING',   mode="REQUIRED"),
     ]
-    __create_table(dataset, os.getenv('BQ_CREDENTIALS_TABLE'), schema, client)
+    __create_table(dataset, 'd_credentials', schema, client)
 
 
     # 6. Create Excercise Names table
     schema = [
-    bigquery.SchemaField('KeyExcerciseId',  'INTEGER',  mode="REQUIRED"),
-    bigquery.SchemaField('ExcerciseName',   'STRING',   mode="REQUIRED"),
+    bigquery.SchemaField('KeyWorkoutId',  'INTEGER',  mode="REQUIRED"),
+    bigquery.SchemaField('WorkoutName',   'STRING',   mode="REQUIRED"),
     ]
-    __create_table(dataset, os.getenv('BQ_WORKOUTS_TABLE'), schema, client)
+    __create_table(dataset, 'd_workout', schema, client)
 
 
 
