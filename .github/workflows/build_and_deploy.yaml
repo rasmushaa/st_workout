@@ -6,13 +6,6 @@ on:
       - main
       - stg
 
-
-env:
-  STREAMLIT_ENV=${{ github.ref_name == 'main' && 'prod' || 'stg' }}
-  IMAGE_TAG=${{ github.ref_name == 'main' && 'latest' || 'stg' }}
-  GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
-
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,6 +13,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Set environment variables
+      run: |
+        echo "STREAMLIT_ENV=$(if [ '${{ github.ref_name }}' == 'main' ]; then echo 'prod'; else echo 'stg'; fi)" >> $GITHUB_ENV
+        echo "IMAGE_TAG=$(if [ '${{ github.ref_name }}' == 'main' ]; then echo 'latest'; else echo 'stg'; fi)" >> $GITHUB_ENV
 
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v1
