@@ -20,7 +20,7 @@ kill_previous_streamlit() {
 }
 
 
-# Function to load environment variables from .env.dev file
+# Function to load environment variables from .env file
 load_env() {
     echo "Loading environment variables from .env..."
     if [ -f .env ]; then

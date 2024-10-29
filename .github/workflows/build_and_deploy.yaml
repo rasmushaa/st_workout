@@ -6,6 +6,13 @@ on:
       - main
       - stg
 
+
+env:
+  STREAMLIT_ENV=${{ github.ref_name == 'main' && 'prod' || 'stg' }}
+  IMAGE_TAG=${{ github.ref_name == 'main' && 'latest' || 'stg' }}
+  GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
+
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -34,34 +41,7 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         docker-compose --version  # Optional: verify installation
 
-    - name: Determine Environment and Create .env file
-      run: |
-        touch .env  # Ensure the .env file exists
-        # Set environment variables based on the branch
-        if [[ "${{ github.ref_name }}" == "main" ]]; then # Production environment
-          echo "STREAMLIT_ENV=prod" >> .env
-          echo "GCP_SERVICE_ACCOUNT=${{ secrets.GCP_SERVICE_ACCOUNT }}" >> .env
-          echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" >> .env
-          echo "IMAGE_TAG=latest" >> .env
-        elif [[ "${{ github.ref_name }}" == "stg" ]]; then # Staging environment
-          echo "STREAMLIT_ENV=stg" >> .env
-          echo "GCP_SERVICE_ACCOUNT=${{ secrets.GCP_SERVICE_ACCOUNT }}" >> .env
-          echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" >> .env
-          echo "IMAGE_TAG=stg" >> .env
-        else
-          echo "Branch is not configured for deployment"
-          exit 1
-        fi
-
-    - name: Output .env file content (debug)
-      run: |
-        echo "Contents of .env file:"
-        cat .env | grep -v GCP_SERVICE_ACCOUNT  # Mask sensitive information
-
     - name: Build and push Docker image using Docker Compose
       run: |
         docker-compose --env-file .env -f docker-compose.yaml build
         docker-compose --env-file .env -f docker-compose.yaml push
-
-    - name: Clean up .env file
-      run: rm -f .env
