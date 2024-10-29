@@ -15,7 +15,7 @@ def st_wrapper_init_user(username, password_hash):
     return api.init_user(username, password_hash)
 
 env = os.getenv('STREAMLIT_ENV')
-env_siffix = '' if env=='prod' else ': STG' if env=='stg' else ': DEV'
+env_siffix = '' if env=='prod' else ': STG' if env=='stg' else ': DEV' if env=='dev' else 'EnvVariable NotFound!' 
 st.title(f'Data Workouts App{env_siffix}')
 
 st.write('Please login')
