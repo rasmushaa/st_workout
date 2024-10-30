@@ -14,10 +14,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set environment variables
+    - name: Determine Environment and Create .env file
       run: |
-        echo "STREAMLIT_ENV=$(if [ '${{ github.ref_name }}' == 'main' ]; then echo 'prod'; else echo 'stg'; fi)" >> $GITHUB_ENV
-        echo "IMAGE_TAG=$(if [ '${{ github.ref_name }}' == 'main' ]; then echo 'latest'; else echo 'stg'; fi)" >> $GITHUB_ENV
+        touch .env  # Ensure the .env file exists
+        # Set environment variables based on the branch
+        if [[ "${{ github.ref_name }}" == "main" ]]; then # Production environment
+          echo "STREAMLIT_ENV=prod" >> .env
+          echo "IMAGE_TAG=latest" >> .env
+        elif [[ "${{ github.ref_name }}" == "stg" ]]; then # Staging environment
+          echo "STREAMLIT_ENV=stg" >> .env
+          echo "IMAGE_TAG=stg" >> .env
+        else
+          echo "Branch is not configured for deployment"
+          exit 1
+        fi
+
+        # Print the contents of the .env file
+        echo "Contents of .env file:"
+        cat .env
 
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v1
