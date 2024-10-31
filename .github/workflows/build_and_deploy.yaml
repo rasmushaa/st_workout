@@ -20,10 +20,8 @@ jobs:
         # Determine environment based on branch
         if [ "${{ github.ref_name }}" == "main" ]; then
           echo "STREAMLIT_ENV=prod" >> $GITHUB_ENV
-          echo "IMAGE_TAG=latest" >> $GITHUB_ENV
         else
           echo "STREAMLIT_ENV=stg" >> $GITHUB_ENV
-          echo "IMAGE_TAG=stg" >> $GITHUB_ENV
         fi
         echo "GCP_PROJECT_ID=rasmus-prod" >> $GITHUB_ENV
 
@@ -43,16 +41,16 @@ jobs:
 
     - name: Build and Push Docker image
       run: |
-        IMAGE_URI="europe-north1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}"
+        IMAGE_URI="europe-north1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/streamlit-images/st-workout-${{ env.STREAMLIT_ENV  }}:latest"
         docker build -t "$IMAGE_URI" .
         docker push "$IMAGE_URI"
 
     - name: Deploy to Cloud Run
       run: |
-        gcloud run deploy st-workout \
-          --image "europe-north1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}" \
+        gcloud run deploy st-workout-${{ env.STREAMLIT_ENV  }}  \
+          --image "europe-north1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/streamlit-images/st-workout-${{ env.STREAMLIT_ENV  }}:latest" \
           --platform managed \
           --region europe-north1 \
           --port 8080 \
           --project "${{ env.GCP_PROJECT_ID }}" \
-          --set-env-vars "STREAMLIT_ENV=${{ env.STREAMLIT_ENV }},GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}"
+          --set-env-vars "STREAMLIT_ENV=${{ env.STREAMLIT_ENV }}"
