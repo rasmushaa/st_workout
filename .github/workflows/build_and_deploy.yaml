@@ -15,16 +15,16 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Determine Environment
-        id: determine-env
-        run: |
-          # Determine environment based on branch
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "STREAMLIT_ENV=prod" >> $GITHUB_ENV
-            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-          else
-            echo "STREAMLIT_ENV=stg" >> $GITHUB_ENV
-            echo "IMAGE_TAG=stg" >> $GITHUB_ENV
-          fi
+      id: determine-env
+      run: |
+        # Determine environment based on branch
+        if [ "${{ github.ref_name }}" == "main" ]; then
+          echo "STREAMLIT_ENV=prod" >> $GITHUB_ENV
+          echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+        else
+          echo "STREAMLIT_ENV=stg" >> $GITHUB_ENV
+          echo "IMAGE_TAG=stg" >> $GITHUB_ENV
+        fi
 
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v1
