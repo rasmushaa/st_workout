@@ -15,16 +15,16 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Determine Environment
-        id: determine-env
-        run: |
-          # Determine environment based on branch
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "STREAMLIT_ENV=prod" >> $GITHUB_ENV
-            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-          else
-            echo "STREAMLIT_ENV=stg" >> $GITHUB_ENV
-            echo "IMAGE_TAG=stg" >> $GITHUB_ENV
-          fi
+      id: determine-env
+      run: |
+        # Determine environment based on branch
+        if [ "${{ github.ref_name }}" == "main" ]; then
+          echo "STREAMLIT_ENV=prod" >> $GITHUB_ENV
+          echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+        else
+          echo "STREAMLIT_ENV=stg" >> $GITHUB_ENV
+          echo "IMAGE_TAG=stg" >> $GITHUB_ENV
+        fi
 
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v1
@@ -41,17 +41,17 @@ jobs:
         gcloud auth configure-docker europe-north1-docker.pkg.dev
 
     - name: Build and Push Docker image
-        run: |
-          IMAGE_URI="europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}"
-          docker build -t "$IMAGE_URI" .
-          docker push "$IMAGE_URI"
+      run: |
+        IMAGE_URI="europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}"
+        docker build -t "$IMAGE_URI" .
+        docker push "$IMAGE_URI"
 
     - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy st-workout \
-            --image "europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}" \
-            --platform managed \
-            --region europe-north1 \
-            --port 8080 \
-            --project "${{ secrets.GCP_PROJECT_ID }}" \
-            --set-env-vars "STREAMLIT_ENV=${{ env.STREAMLIT_ENV }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
+      run: |
+        gcloud run deploy st-workout \
+          --image "europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}" \
+          --platform managed \
+          --region europe-north1 \
+          --port 8080 \
+          --project "${{ secrets.GCP_PROJECT_ID }}" \
+          --set-env-vars "STREAMLIT_ENV=${{ env.STREAMLIT_ENV }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
