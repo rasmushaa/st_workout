@@ -14,24 +14,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Determine Environment and Create .env file
-      run: |
-        touch .env  # Ensure the .env file exists
-        # Set environment variables based on the branch
-        if [[ "${{ github.ref_name }}" == "main" ]]; then # Production environment
-          echo "STREAMLIT_ENV=prod" >> .env
-          echo "IMAGE_TAG=latest" >> .env
-        elif [[ "${{ github.ref_name }}" == "stg" ]]; then # Staging environment
-          echo "STREAMLIT_ENV=stg" >> .env
-          echo "IMAGE_TAG=stg" >> .env
-        else
-          echo "Branch is not configured for deployment"
-          exit 1
-        fi
-
-        # Print the contents of the .env file
-        echo "Contents of .env file:"
-        cat .env
+    - name: Determine Environment
+        id: determine-env
+        run: |
+          # Determine environment based on branch
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "STREAMLIT_ENV=prod" >> $GITHUB_ENV
+            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+          else
+            echo "STREAMLIT_ENV=stg" >> $GITHUB_ENV
+            echo "IMAGE_TAG=stg" >> $GITHUB_ENV
+          fi
 
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v1
@@ -47,13 +40,18 @@ jobs:
       run: |
         gcloud auth configure-docker europe-north1-docker.pkg.dev
 
-    - name: Install Docker Compose
-      run: |
-        sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        docker-compose --version  # Optional: verify installation
+    - name: Build and Push Docker image
+        run: |
+          IMAGE_URI="europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}"
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
 
-    - name: Build and push Docker image using Docker Compose
-      run: |
-        docker-compose --env-file .env -f docker-compose.yaml build
-        docker-compose --env-file .env -f docker-compose.yaml push
+    - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy st-workout \
+            --image "europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}" \
+            --platform managed \
+            --region europe-north1 \
+            --port 8080 \
+            --project "${{ secrets.GCP_PROJECT_ID }}" \
+            --set-env-vars "STREAMLIT_ENV=${{ env.STREAMLIT_ENV }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
