@@ -25,6 +25,7 @@ jobs:
           echo "STREAMLIT_ENV=stg" >> $GITHUB_ENV
           echo "IMAGE_TAG=stg" >> $GITHUB_ENV
         fi
+        echo "GCP_PROJECT_ID=rasmus-prod" >> $GITHUB_ENV
 
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v1
@@ -34,7 +35,7 @@ jobs:
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        project_id: ${{ env.GCP_PROJECT_ID }}
 
     - name: Configure Docker to use gcloud as a credential helper
       run: |
@@ -42,16 +43,16 @@ jobs:
 
     - name: Build and Push Docker image
       run: |
-        IMAGE_URI="europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}"
+        IMAGE_URI="europe-north1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}"
         docker build -t "$IMAGE_URI" .
         docker push "$IMAGE_URI"
 
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy st-workout \
-          --image "europe-north1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}" \
+          --image "europe-north1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/streamlit-images/st-workout:${{ env.IMAGE_TAG }}" \
           --platform managed \
           --region europe-north1 \
           --port 8080 \
-          --project "${{ secrets.GCP_PROJECT_ID }}" \
-          --set-env-vars "STREAMLIT_ENV=${{ env.STREAMLIT_ENV }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
+          --project "${{ env.GCP_PROJECT_ID }}" \
+          --set-env-vars "STREAMLIT_ENV=${{ env.STREAMLIT_ENV }},GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}"
